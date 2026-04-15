@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+.venv/
+env/
+venv/
+ENV/
+*.log
+
+# Next.js
+.next/
+out/
+build/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+backend/.venv/
+backend/venv/
+backend/env/
+
+# IDEs/System
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# OS related
+Desktop.ini
+ehthumbs.db
+
+# AI Models (Optional - they can be large, but required for app to run)
+# We usually ignore them if they are download-on-demand
+# *.pt
+# *.onnx
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
