@@ -19,19 +19,86 @@ def _get_model():
 
 # COCO class names for labelling detections
 COCO_CLASSES = [
-    "person", "bicycle", "car", "motorcycle", "airplane", "bus", "train",
-    "truck", "boat", "traffic light", "fire hydrant", "stop sign",
-    "parking meter", "bench", "bird", "cat", "dog", "horse", "sheep",
-    "cow", "elephant", "bear", "zebra", "giraffe", "backpack", "umbrella",
-    "handbag", "tie", "suitcase", "frisbee", "skis", "snowboard",
-    "sports ball", "kite", "baseball bat", "baseball glove", "skateboard",
-    "surfboard", "tennis racket", "bottle", "wine glass", "cup", "fork",
-    "knife", "spoon", "bowl", "banana", "apple", "sandwich", "orange",
-    "broccoli", "carrot", "hot dog", "pizza", "donut", "cake", "chair",
-    "couch", "potted plant", "bed", "dining table", "toilet", "tv",
-    "laptop", "mouse", "remote", "keyboard", "cell phone", "microwave",
-    "oven", "toaster", "sink", "refrigerator", "book", "clock", "vase",
-    "scissors", "teddy bear", "hair drier", "toothbrush",
+    "person",
+    "bicycle",
+    "car",
+    "motorcycle",
+    "airplane",
+    "bus",
+    "train",
+    "truck",
+    "boat",
+    "traffic light",
+    "fire hydrant",
+    "stop sign",
+    "parking meter",
+    "bench",
+    "bird",
+    "cat",
+    "dog",
+    "horse",
+    "sheep",
+    "cow",
+    "elephant",
+    "bear",
+    "zebra",
+    "giraffe",
+    "backpack",
+    "umbrella",
+    "handbag",
+    "tie",
+    "suitcase",
+    "frisbee",
+    "skis",
+    "snowboard",
+    "sports ball",
+    "kite",
+    "baseball bat",
+    "baseball glove",
+    "skateboard",
+    "surfboard",
+    "tennis racket",
+    "bottle",
+    "wine glass",
+    "cup",
+    "fork",
+    "knife",
+    "spoon",
+    "bowl",
+    "banana",
+    "apple",
+    "sandwich",
+    "orange",
+    "broccoli",
+    "carrot",
+    "hot dog",
+    "pizza",
+    "donut",
+    "cake",
+    "chair",
+    "couch",
+    "potted plant",
+    "bed",
+    "dining table",
+    "toilet",
+    "tv",
+    "laptop",
+    "mouse",
+    "remote",
+    "keyboard",
+    "cell phone",
+    "microwave",
+    "oven",
+    "toaster",
+    "sink",
+    "refrigerator",
+    "book",
+    "clock",
+    "vase",
+    "scissors",
+    "teddy bear",
+    "hair drier",
+    "toothbrush",
 ]
 
 
@@ -59,16 +126,22 @@ def detect_subjects(image_path: str) -> list:
         for i, box in enumerate(boxes):
             x1, y1, x2, y2 = map(int, box)
             class_id = int(classes[i])
-            label = COCO_CLASSES[class_id] if class_id < len(COCO_CLASSES) else f"class_{class_id}"
+            label = (
+                COCO_CLASSES[class_id]
+                if class_id < len(COCO_CLASSES)
+                else f"class_{class_id}"
+            )
             polygon = masks_xy[i].flatten().tolist() if i < len(masks_xy) else []
 
-            detections.append({
-                "bbox": [x1, y1, x2, y2],
-                "class_id": class_id,
-                "label": label,
-                "confidence": round(float(confidences[i]), 3),
-                "polygon": polygon,
-            })
+            detections.append(
+                {
+                    "bbox": [x1, y1, x2, y2],
+                    "class_id": class_id,
+                    "label": label,
+                    "confidence": round(float(confidences[i]), 3),
+                    "polygon": polygon,
+                }
+            )
 
     return detections
 
@@ -110,13 +183,19 @@ def generate_segmentation_mask(image_path: str) -> dict:
             # Record detection info
             x1, y1, x2, y2 = map(int, boxes[i])
             class_id = int(classes[i])
-            label = COCO_CLASSES[class_id] if class_id < len(COCO_CLASSES) else f"class_{class_id}"
+            label = (
+                COCO_CLASSES[class_id]
+                if class_id < len(COCO_CLASSES)
+                else f"class_{class_id}"
+            )
 
-            detections.append({
-                "bbox": [x1, y1, x2, y2],
-                "label": label,
-                "confidence": round(float(confidences[i]), 3),
-            })
+            detections.append(
+                {
+                    "bbox": [x1, y1, x2, y2],
+                    "label": label,
+                    "confidence": round(float(confidences[i]), 3),
+                }
+            )
 
     # Apply slight Gaussian blur for smoother mask edges
     if np.any(combined_mask):
@@ -181,67 +260,81 @@ def analyze_for_enhance(image_path: str) -> dict:
     # ── Exposure ──
     if avg_brightness < 100:
         boost = min(1.5, (128 - avg_brightness) / 80)
-        suggestions.append({
-            "name": "Increase Exposure",
-            "param": "exposure",
-            "value": round(boost, 2),
-            "reason": "Image appears underexposed",
-        })
+        suggestions.append(
+            {
+                "name": "Increase Exposure",
+                "param": "exposure",
+                "value": round(boost, 2),
+                "reason": "Image appears underexposed",
+            }
+        )
     elif avg_brightness > 180:
         cut = max(-1.0, -(avg_brightness - 128) / 80)
-        suggestions.append({
-            "name": "Decrease Exposure",
-            "param": "exposure",
-            "value": round(cut, 2),
-            "reason": "Image appears overexposed",
-        })
+        suggestions.append(
+            {
+                "name": "Decrease Exposure",
+                "param": "exposure",
+                "value": round(cut, 2),
+                "reason": "Image appears overexposed",
+            }
+        )
 
     # ── Contrast ──
     if dynamic_range < 150:
         boost = min(40, round((200 - dynamic_range) / 3))
-        suggestions.append({
-            "name": "Boost Contrast",
-            "param": "contrast",
-            "value": int(boost),
-            "reason": f"Low dynamic range ({dynamic_range})",
-        })
+        suggestions.append(
+            {
+                "name": "Boost Contrast",
+                "param": "contrast",
+                "value": int(boost),
+                "reason": f"Low dynamic range ({dynamic_range})",
+            }
+        )
 
     # ── Shadows ──
     if p5 < 20:
-        suggestions.append({
-            "name": "Lift Shadows",
-            "param": "shadows",
-            "value": min(30, round((30 - p5) * 1.5)),
-            "reason": "Crushed shadow detail",
-        })
+        suggestions.append(
+            {
+                "name": "Lift Shadows",
+                "param": "shadows",
+                "value": min(30, round((30 - p5) * 1.5)),
+                "reason": "Crushed shadow detail",
+            }
+        )
 
     # ── Highlights ──
     if p95 > 240:
-        suggestions.append({
-            "name": "Recover Highlights",
-            "param": "highlights",
-            "value": -min(30, round((p95 - 230) * 3)),
-            "reason": "Highlight clipping detected",
-        })
+        suggestions.append(
+            {
+                "name": "Recover Highlights",
+                "param": "highlights",
+                "value": -min(30, round((p95 - 230) * 3)),
+                "reason": "Highlight clipping detected",
+            }
+        )
 
     # ── Vibrance ──
     if avg_saturation < 0.25:
-        suggestions.append({
-            "name": "Add Vibrance",
-            "param": "vibrance",
-            "value": min(35, round((0.35 - avg_saturation) * 100)),
-            "reason": "Colors appear muted",
-        })
+        suggestions.append(
+            {
+                "name": "Add Vibrance",
+                "param": "vibrance",
+                "value": min(35, round((0.35 - avg_saturation) * 100)),
+                "reason": "Colors appear muted",
+            }
+        )
 
     # ── Sharpening ──
     laplacian_var = float(cv2.Laplacian(gray, cv2.CV_64F).var())
     if laplacian_var < 500:
-        suggestions.append({
-            "name": "Sharpen Details",
-            "param": "sharpening",
-            "value": 15,
-            "reason": "Image could benefit from sharpening",
-        })
+        suggestions.append(
+            {
+                "name": "Sharpen Details",
+                "param": "sharpening",
+                "value": 15,
+                "reason": "Image could benefit from sharpening",
+            }
+        )
 
     return {
         "suggestions": suggestions,
@@ -282,11 +375,16 @@ def generate_image_caption(image_path: str) -> dict:
 
     # ── Dominant colors ──
     color_refs = [
-        ("red", 200, 50, 50), ("orange", 220, 140, 50),
-        ("yellow", 220, 210, 60), ("green", 50, 180, 60),
-        ("teal", 50, 180, 180), ("blue", 50, 80, 200),
-        ("purple", 140, 50, 200), ("pink", 220, 80, 160),
-        ("warm", 200, 160, 100), ("cool", 100, 140, 200),
+        ("red", 200, 50, 50),
+        ("orange", 220, 140, 50),
+        ("yellow", 220, 210, 60),
+        ("green", 50, 180, 60),
+        ("teal", 50, 180, 180),
+        ("blue", 50, 80, 200),
+        ("purple", 140, 50, 200),
+        ("pink", 220, 80, 160),
+        ("warm", 200, 160, 100),
+        ("cool", 100, 140, 200),
     ]
 
     step = max(1, (h * w) // 5000)
@@ -319,12 +417,28 @@ def generate_image_caption(image_path: str) -> dict:
         detected_labels = []
 
     # ── Build descriptors ──
-    mood = "dramatic, moody" if avg_brightness < 80 else "balanced" if avg_brightness < 140 else "bright, airy"
+    mood = (
+        "dramatic, moody"
+        if avg_brightness < 80
+        else "balanced" if avg_brightness < 140 else "bright, airy"
+    )
     color_desc = ", ".join(top_colors) if top_colors else "neutral"
-    sat_desc = "vibrant" if avg_saturation > 0.5 else "natural" if avg_saturation > 0.25 else "muted"
-    orientation = "landscape" if aspect_ratio > 1.3 else "portrait" if aspect_ratio < 0.77 else "square"
+    sat_desc = (
+        "vibrant"
+        if avg_saturation > 0.5
+        else "natural" if avg_saturation > 0.25 else "muted"
+    )
+    orientation = (
+        "landscape"
+        if aspect_ratio > 1.3
+        else "portrait" if aspect_ratio < 0.77 else "square"
+    )
 
-    lighting = "deep shadows and rich contrast" if avg_brightness < 100 else "bright highlights and open shadows"
+    lighting = (
+        "deep shadows and rich contrast"
+        if avg_brightness < 100
+        else "bright highlights and open shadows"
+    )
     energy = "colorful and energetic" if avg_saturation > 0.4 else "subtle and refined"
 
     subjects_text = ""
@@ -341,7 +455,9 @@ def generate_image_caption(image_path: str) -> dict:
     obj_tags = " ".join(f"#{l.replace(' ', '')}" for l in detected_labels[:3])
     social = f"✨ {social_mood} {social_emoji} #photography #creative #{sat_desc} #{mood.split(',')[0]} {obj_tags}".strip()
 
-    seo_subjects = f", featuring {', '.join(detected_labels)}" if detected_labels else ""
+    seo_subjects = (
+        f", featuring {', '.join(detected_labels)}" if detected_labels else ""
+    )
     seo = (
         f"{orientation.capitalize()} photograph with {sat_desc} {color_desc} color palette, "
         f"{mood} lighting, professional composition{seo_subjects}"
