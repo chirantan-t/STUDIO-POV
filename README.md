@@ -1,4 +1,4 @@
-# 🎬 STUDIO POV — AI-Powered Photo & Video Editor
+# 🎬 STUDIO POV — AI-Powered Photo Editor
 
 A premium creative studio with **Liquid Glass UI**, professional **Lightroom-style** editing tools, and **AI-powered** features.
 
